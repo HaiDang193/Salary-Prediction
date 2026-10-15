@@ -1,0 +1,31 @@
+
+# Data processing
+numpy
+pandas
+scipy
+
+# Visualization
+matplotlib
+seaborn
+
+# Machine Learning
+scikit-learn
+joblib
+
+# Kaggle API
+kaggle
+
+# SQL Server
+SQLAlchemy
+pyodbc
+python-dotenv
+
+# Notebook
+jupyter
+ipykernel
+
+# Application
+streamlit
+
+# Testing
+pytest
