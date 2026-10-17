@@ -74,10 +74,11 @@ for tu_khoa in danh_sach_tu_khoa:
                 break
 
             time.sleep(4)
-            
-thu_muc = r"D:\kì 4\ail\project_ail\Diabetes-Prediction\data"
-os.makedirs(thu_muc, exist_ok=True)
-ten_file = os.path.join(thu_muc, "du_lieu_adzuna_tho.json")
+
+ROOT = Path.cwd()
+DATA_DIR_SAVE = ROOT / ".." / "data" / "raw"
+os.makedirs(DATA_DIR_SAVE, exist_ok=True)
+ten_file = os.path.join(DATA_DIR_SAVE, "du_lieu_adzuna_tho.json")
 with open(ten_file, "w", encoding="utf-8") as f:
     json.dump(all_jobs, f, ensure_ascii=False, indent=4)
 print(f"Đã lưu {len(all_jobs)} bản ghi vào: {ten_file}")
