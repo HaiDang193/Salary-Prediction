@@ -78,7 +78,7 @@ for tu_khoa in danh_sach_tu_khoa:
 ROOT = Path.cwd()
 DATA_DIR_SAVE = ROOT / ".." / "data" / "raw"
 os.makedirs(DATA_DIR_SAVE, exist_ok=True)
-ten_file = os.path.join(DATA_DIR_SAVE, "du_lieu_adzuna_tho.json")
+ten_file = os.path.join(DATA_DIR_SAVE, "raw_adzuna.json")
 with open(ten_file, "w", encoding="utf-8") as f:
     json.dump(all_jobs, f, ensure_ascii=False, indent=4)
 print(f"Đã lưu {len(all_jobs)} bản ghi vào: {ten_file}")
