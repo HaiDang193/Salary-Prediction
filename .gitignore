@@ -14,9 +14,9 @@ env/
 .env.*
 !.env.example
 
-# Kaggle credentials
-kaggle.json
-.kaggle/
+# Kaggle link
+https://www.kaggle.com/datasets/nehalbirla/vehicle-dataset-from-cardekho
+
 
 # Jupyter
 .ipynb_checkpoints/
