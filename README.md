@@ -1,46 +1,46 @@
-# 💼 Salary Prediction — Dự án dự đoán mức lương bằng Machine Learning
+# Dự đoán giá ô tô cũ với Machine Learning
 
 ## 1. Giới thiệu dự án
 
-**Salary Prediction** là dự án xây dựng mô hình Machine Learning để dự đoán mức lương ước tính của một tin tuyển dụng dựa trên các đặc trưng của công việc, sử dụng dữ liệu thu thập thông qua **Adzuna API**.
+Thị trường ô tô đã qua sử dụng có sự đa dạng về hãng xe, năm sản xuất, số km đã đi, loại nhiên liệu và tình trạng sở hữu. Những đặc điểm này có thể liên quan đến giá bán, khiến việc ước lượng giá một chiếc xe cũ trở thành một bài toán đáng quan tâm.
 
-Dự án được phát triển theo quy trình **End-to-End Machine Learning Pipeline**, bao gồm thu thập dữ liệu từ API, lưu trữ dữ liệu bằng SQL Server, tìm hiểu và phân tích dữ liệu, tiền xử lý, xây dựng đặc trưng, huấn luyện mô hình hồi quy, đánh giá mô hình và đóng gói các thành phần Python để có thể tái sử dụng.
+Dự án Dự đoán giá ô tô cũ (Used Car Price Prediction) sử dụng bộ dữ liệu CarDekho để khám phá các yếu tố liên quan đến giá bán và xây dựng mô hình Machine Learning nhằm ước lượng giá xe dựa trên những thông tin có sẵn.
 
-Biến mục tiêu dự kiến là `salary`, được tính từ `salary_min` và `salary_max` khi cả hai giá trị đều hợp lệ:
+Dự án tập trung vào ba thuật toán hồi quy:
+- Linear Regression: Mô hình hồi quy tuyến tính, được sử dụng làm mốc so sánh.
+- Random Forest Regressor: Mô hình kết hợp nhiều cây quyết định theo phương pháp Bagging.
+- XGBoost Regressor: Mô hình sử dụng Gradient Boosting để cải thiện khả năng dự đoán.
+Thông qua quá trình khám phá dữ liệu, tiền xử lý, huấn luyện, tối ưu và đánh giá mô hình, dự án hướng đến việc so sánh hiệu quả của các thuật toán và lựa chọn phương pháp phù hợp cho bài toán dự đoán giá ô tô cũ.
 
-\[
-salary = \frac{salary\_min + salary\_max}{2}
-\]
- 
-Các bản ghi không có đủ thông tin để tính mức lương trung bình sẽ được kiểm tra và xử lý theo quy tắc dữ liệu đã xác định. Không tự động coi giá trị thiếu là 0 hoặc tự suy đoán mức lương nếu không có cơ sở.
+1. Mục tiêu dự án
+- Khám phá phân phối giá bán và mối quan hệ giữa các đặc trưng với giá xe.
+- Chuẩn bị dữ liệu và xây dựng đặc trưng phù hợp cho bài toán hồi quy (Regression).
+- Huấn luyện, so sánh và tối ưu Linear Regression, Random Forest và XGBoost.
+- Đánh giá bằng MAE, RMSE và R² trên dữ liệu chưa được sử dụng để huấn luyện.
+Biến mục tiêu (target): selling_price (đơn vị INR – rupee Ấn Độ).
 
-Bên cạnh việc tìm hiểu các thuật toán Machine Learning, dự án hướng đến rèn luyện Python theo mô-đun, truy vấn dữ liệu bằng SQL Server, xây dựng quy trình thực nghiệm có thể lặp lại và quản lý mã nguồn bằng Git/GitHub.
+2. Bộ dữ liệu
+- Nguồn tham khảo: Vehicle Dataset from CarDekho – Kaggle
+- Tệp dữ liệu: car_dataset.csv
+- Kích thước ban đầu: 4.340 dòng × 8 cột
+- Dữ liệu thiếu: Không phát hiện giá trị null trong 8 cột.
+- Dòng trùng hoàn toàn: 763; sau khi loại bỏ còn 3.577 dòng.
 
-**Lưu ý:** Kết quả dự đoán là mức lương ước tính dựa trên dữ liệu và phạm vi huấn luyện. Kết quả không phải cam kết về mức lương thực tế của một vị trí tuyển dụng.
-
-## 2. Mục tiêu dự án
-
-- Thu thập dữ liệu tin tuyển dụng thông qua Adzuna API.
-- Quản lý API key và cấu hình truy vấn an toàn bằng biến môi trường.
-- Xây dựng quy trình lấy dữ liệu có hỗ trợ phân trang, kiểm tra phản hồi API và xử lý lỗi.
-- Sử dụng Microsoft SQL Server để lưu trữ, truy vấn và kiểm tra dữ liệu.
-- Thực hiện Data Understanding và Exploratory Data Analysis (EDA).
-- Kiểm tra dữ liệu thiếu, dữ liệu trùng lặp, giá trị bất thường và tính hợp lệ của mức lương.
-- Xây dựng biến mục tiêu `salary` từ `salary_min` và `salary_max` khi đủ dữ liệu.
-- Tiền xử lý dữ liệu số, dữ liệu phân loại và dữ liệu văn bản nếu các trường này có trong dữ liệu thu thập được.
-- Xây dựng và so sánh các mô hình Machine Learning cho bài toán Regression.
-- Đánh giá mô hình bằng các chỉ số phù hợp như MAE, RMSE và \(R^2\).
-- Lưu pipeline tiền xử lý và mô hình đã lựa chọn để tái sử dụng.
-- Tổ chức mã nguồn theo mô-đun, có khả năng mở rộng và quản lý bằng Git/GitHub.
-- Tập trung hoàn thiện quy trình Machine Learning trước khi xem xét xây dựng giao diện người dùng.
+Cột	Mô tả
+name : Tên xe, bao gồm hãng, mẫu xe và phiên bản
+year : Năm sản xuất
+selling_price : Giá bán xe (INR), là biến mục tiêu
+km_driven : Tổng số km xe đã đi
+fuel : Loại nhiên liệu: Petrol, Diesel, CNG, LPG, Electric
+seller_type : Loại người bán : Individual, Dealer, Trustmark Dealer
+transmission : Hộp số: Manual, Automatic
+owner : Thông tin sở hữu: First Owner, Second Owner, Third Owner, Fourth & Above Owner, Test Drive Car
 
 ## 3. Công nghệ sử dụng
 
 | Công nghệ | Mục đích |
 |---|---|
 | Python | Ngôn ngữ lập trình chính |
-| Adzuna API | Thu thập dữ liệu tin tuyển dụng và thông tin lương được API cung cấp |
-| Requests | Gửi HTTP request đến API |
 | python-dotenv | Đọc cấu hình cục bộ từ file `.env` |
 | Pandas, NumPy | Xử lý và phân tích dữ liệu |
 | Matplotlib, Seaborn | Trực quan hóa dữ liệu |
@@ -70,8 +70,7 @@ salary-prediction/
 │   ├── 05_model_experiments.ipynb         # Thử nghiệm các mô hình hồi quy
 │   └── 06_evaluation.ipynb                # Đánh giá và phân tích lỗi mô hình
 │
-├── scripts/
-│   └── fetch_adzuna_data.py               # Thu thập dữ liệu từ Adzuna API
+├
 │
 ├── src/
 │   ├── __init__.py
@@ -106,177 +105,97 @@ Cấu trúc trên là cấu trúc mục tiêu. Các thư mục và file sẽ đ�
 
 ## 5. Quy trình thực hiện dự án
 
-### Giai đoạn 1 — Thu thập dữ liệu từ Adzuna API
+5. Quy trình thực hiện dự án
 
-**Mục tiêu:** Xây dựng quy trình thu thập tin tuyển dụng có thể chạy lại và kiểm tra được nguồn dữ liệu.
+Dự án được triển khai theo quy trình Machine Learning, từ khám phá dữ liệu đến xây dựng, tối ưu và đánh giá các mô hình dự đoán giá ô tô cũ.
 
-Các công việc:
+5.1. Data Understanding (Tìm hiểu dữ liệu)
 
-1. Đăng ký và thiết lập quyền truy cập Adzuna API theo tài liệu chính thức.
-2. Lấy thông tin xác thực cần thiết, thường gồm `APP_ID` và `APP_KEY`, theo cấu hình API được cấp.
-3. Lưu thông tin xác thực trong file `.env` cục bộ; không ghi trực tiếp vào mã nguồn.
-4. Xác định quốc gia, từ khóa tìm kiếm, địa điểm, số trang và các tham số truy vấn phù hợp.
-5. Viết `scripts/fetch_adzuna_data.py` để gửi request, kiểm tra mã trạng thái HTTP và xử lý lỗi.
-6. Thu thập dữ liệu theo phân trang trong phạm vi và giới hạn API cho phép.
-7. Lưu phản hồi dữ liệu thô vào `data/raw/` để có thể kiểm tra và tái xử lý.
-8. Ghi lại thời điểm thu thập, tham số truy vấn và số lượng bản ghi nhận được.
-9. Kiểm tra cấu trúc JSON thực tế trước khi xác định schema dữ liệu chính thức.
+Trạng thái: Đã hoàn thành
 
-Các trường như chức danh, công ty, địa điểm, mô tả, loại hợp đồng, `salary_min` và `salary_max` chỉ được sử dụng nếu thực sự có trong phản hồi API. Tên trường và mức độ đầy đủ cần được xác nhận từ dữ liệu thực tế.
+Tìm hiểu nguồn gốc, cấu trúc và ý nghĩa các thuộc tính trong bộ dữ liệu CarDekho.
 
-**Kết quả đầu ra:** Dữ liệu tin tuyển dụng thô cùng thông tin về quá trình thu thập, sẵn sàng cho bước kiểm tra và phân tích.
+Xác định biến mục tiêu selling_price và các đặc trưng đầu vào.
 
-### Giai đoạn 2 — Thiết lập SQL Server
+Kiểm tra kiểu dữ liệu, giá trị thiếu và các bản ghi trùng lặp.
 
-**Mục tiêu:** Xây dựng nơi lưu trữ và truy vấn dữ liệu thu thập được.
+Thực hiện thống kê mô tả để hiểu đặc điểm ban đầu của dữ liệu.
 
-Các công việc:
+Kết quả: Dataset gồm 4.340 bản ghi, 8 cột, không phát hiện giá trị thiếu và có 763 bản ghi trùng lặp hoàn toàn.
 
-1. Tạo database cho dự án.
-2. Thiết kế bảng theo schema thực tế của dữ liệu Adzuna API.
-3. Xác định khóa phù hợp để nhận diện tin tuyển dụng và hạn chế nạp trùng khi thu thập lại.
-4. Nạp dữ liệu vào SQL Server bằng Python.
-5. Kiểm tra số lượng bản ghi, kiểu dữ liệu, giá trị thiếu và các vấn đề chất lượng dữ liệu.
-6. Viết truy vấn thống kê cơ bản để kiểm tra dữ liệu.
-7. Kết nối SQL Server với Python bằng SQLAlchemy và pyodbc.
+5.2. Exploratory Data Analysis – EDA (Phân tích khám phá dữ liệu)
 
-Có thể thiết kế các bảng riêng cho dữ liệu tin tuyển dụng và thông tin về các lần thu thập nếu điều đó phù hợp với quy mô dự án. Cấu trúc bảng cuối cùng cần dựa trên schema thực tế, không nên giả định trước những trường API không cung cấp.
+Trạng thái: Đã thực hiện phân tích ban đầu
 
-**Kết quả đầu ra:** Database hoạt động, dữ liệu có thể truy vấn và có quy trình nạp dữ liệu có thể lặp lại.
+Univariate Analysis: Phân tích phân phối của biến mục tiêu selling_price và các đặc trưng.
 
-### Giai đoạn 3 — Data Understanding và EDA
+Outlier Analysis: Phát hiện các giá trị ngoại lai trong selling_price và km_driven bằng Boxplot.
 
-**Mục tiêu:** Hiểu cấu trúc, độ đầy đủ và đặc điểm của dữ liệu trước khi xây dựng mô hình.
+Bivariate Analysis: Phân tích mối quan hệ giữa các đặc trưng và giá bán ô tô.
 
-Thực hiện trong `01_data_understanding.ipynb` và `02_eda.ipynb`.
+Correlation Analysis: Sử dụng Pearson Correlation và Heatmap để đánh giá tương quan tuyến tính giữa các biến số.
 
-Các công việc:
+Kết quả ban đầu: Giá bán có phân phối lệch phải, xuất hiện các giá trị ngoại lai và có sự khác biệt về giá giữa các nhóm xe. Các kết quả EDA được sử dụng để định hướng quá trình tiền xử lý và xây dựng mô hình.
 
-- Xác định số lượng bản ghi, số lượng đặc trưng và kiểu dữ liệu.
-- Đọc ý nghĩa các trường được API trả về.
-- Phân biệt biến số, biến phân loại, dữ liệu văn bản, trường định danh và biến mục tiêu.
-- Kiểm tra dữ liệu thiếu và bản ghi trùng lặp.
-- Phân tích thống kê mô tả của các trường số.
-- Phân tích tần suất chức danh công việc, địa điểm, loại hợp đồng hoặc các trường phân loại khác nếu có.
-- Kiểm tra phân phối của `salary_min`, `salary_max` và `salary` khi có đủ dữ liệu.
-- Phát hiện mức lương âm, bằng 0 không hợp lý, sai thứ tự giữa mức tối thiểu và tối đa, hoặc giá trị bất thường.
-- Kiểm tra đơn vị tiền tệ, chu kỳ trả lương và tính nhất quán giữa các bản ghi khi thông tin này có sẵn.
-- Trực quan hóa phân phối mức lương và mối quan hệ giữa các đặc trưng với biến mục tiêu.
-- Đánh giá độ phủ của dữ liệu lương so với toàn bộ tin tuyển dụng.
+5.3. Data Cleaning & Preprocessing (Làm sạch và tiền xử lý dữ liệu)
 
-**Lưu ý:** Không nên trộn lẫn lương theo giờ, theo ngày, theo tháng và theo năm nếu chưa có quy tắc quy đổi đáng tin cậy. Không tự suy ra đơn vị tiền tệ hoặc chu kỳ trả lương khi dữ liệu không xác nhận điều đó.
+Trạng thái: Đã xử lý trùng lặp; các bước còn lại dự kiến triển khai
 
-**Kết quả đầu ra:** Báo cáo EDA, biểu đồ, thống kê mức độ thiếu dữ liệu và danh sách các vấn đề cần giải quyết.
+Loại bỏ 763 bản ghi trùng lặp hoàn toàn, còn lại 3.577 bản ghi.
 
-### Giai đoạn 4 — Tiền xử lý dữ liệu
+Kiểm tra tính hợp lệ của dữ liệu và xem xét các giá trị ngoại lai.
 
-**Mục tiêu:** Chuẩn bị dữ liệu đầu vào phù hợp với các thuật toán Regression.
+Chia dữ liệu thành tập Train và Test trước các phép biến đổi cần học tham số.
 
-Thực hiện trong `03_preprocessing.ipynb`, sau đó triển khai thành `src/preprocessing.py`.
+Mã hóa các biến Categorical thành dạng số phù hợp với thuật toán.
 
-Các công việc có thể bao gồm:
+Thực hiện Feature Engineering, tạo đặc trưng vehicle_age từ năm sản xuất.
 
-- Loại bỏ hoặc xử lý bản ghi trùng lặp dựa trên quy tắc được xác định.
-- Xử lý dữ liệu thiếu theo từng loại trường và mục tiêu sử dụng.
-- Kiểm tra dữ liệu sai kiểu, giá trị không hợp lệ và các trường có ý nghĩa không rõ ràng.
-- Xử lý các bản ghi có `salary_min` hoặc `salary_max` bị thiếu.
-- Tạo biến mục tiêu `salary` khi cả hai giá trị mức lương hợp lệ và có thể so sánh trực tiếp.
-- Kiểm tra điều kiện `salary_min <= salary_max`.
-- Loại bỏ các bản ghi không có nhãn mục tiêu hợp lệ khỏi tập huấn luyện có giám sát, nếu không có phương pháp xử lý được xác định rõ.
-- Mã hóa các biến phân loại bằng phương pháp phù hợp, chẳng hạn One-Hot Encoding.
-- Xử lý dữ liệu văn bản như chức danh và mô tả công việc nếu được đưa vào mô hình.
-- Chuẩn hóa hoặc biến đổi đặc trưng số khi thuật toán yêu cầu.
-- Xem xét phân phối lệch của biến lương; chỉ áp dụng biến đổi mục tiêu khi có lý do và có cách diễn giải kết quả rõ ràng.
-- Chia dữ liệu thành tập huấn luyện, validation (nếu cần) và kiểm tra.
+Thử nghiệm Log Transformation cho các biến phù hợp khi cần thiết.
 
-**Quy tắc tạo biến mục tiêu:**
+5.4. Model Training (Huấn luyện mô hình)
 
-```python
-df["salary"] = (df["salary_min"] + df["salary_max"]) / 2
-```
+Trạng thái: Dự kiến thực hiện
 
-Chỉ áp dụng công thức trên cho các bản ghi có cả `salary_min` và `salary_max` hợp lệ, cùng đơn vị tiền tệ và chu kỳ trả lương có thể so sánh. Trong mã thực tế, cần kiểm tra giá trị thiếu, kiểu dữ liệu và tính hợp lệ trước khi tính.
+Xây dựng và huấn luyện ba mô hình hồi quy:
 
-**Nguyên tắc quan trọng:** Tránh rò rỉ dữ liệu (*data leakage*). Các bước học tham số từ dữ liệu, chẳng hạn điền giá trị thiếu, mã hóa hoặc chuẩn hóa, phải được `fit` trên tập huấn luyện rồi mới áp dụng cho validation và test. Không đưa các trường được dùng trực tiếp để tạo nhãn mục tiêu vào đầu vào mô hình theo cách làm lộ đáp án.
+Linear Regression: Mô hình hồi quy tuyến tính làm mốc so sánh.
 
-**Kết quả đầu ra:** Quy trình tiền xử lý nhất quán, có thể tái sử dụng khi huấn luyện và dự đoán.
+Random Forest Regressor: Mô hình kết hợp nhiều cây quyết định theo phương pháp Bagging.
 
-### Giai đoạn 5 — Feature Engineering
+XGBoost Regressor: Mô hình sử dụng Gradient Boosting để cải thiện hiệu quả dự đoán.
 
-**Mục tiêu:** Xây dựng biểu diễn đầu vào có ích cho việc dự đoán mức lương.
+Các mô hình được huấn luyện và đánh giá bằng cùng một quy trình nhằm đảm bảo tính nhất quán khi so sánh.
 
-Thực hiện trong `04_feature_engineering.ipynb` và triển khai các thành phần ổn định trong `src/feature_engineering.py`.
+5.5. Model Optimization (Tối ưu mô hình)
 
-Các hướng khảo sát, tùy theo trường dữ liệu thực tế:
+Trạng thái: Dự kiến thực hiện
 
-- Chuẩn hóa và gom nhóm chức danh công việc khi có cơ sở rõ ràng.
-- Khai thác thông tin địa điểm, khu vực hoặc quốc gia nếu có.
-- Sử dụng loại hợp đồng, hình thức làm việc hoặc cấp bậc nếu API cung cấp.
-- Trích xuất đặc trưng từ mô tả công việc, chẳng hạn TF-IDF, nếu nội dung và phạm vi dự án phù hợp.
-- Đánh giá việc sử dụng tên công ty hoặc các trường có độ phân biệt cao; tránh để mô hình chỉ ghi nhớ các giá trị xuất hiện trong tập huấn luyện.
-- Loại bỏ trường định danh, URL và thông tin không phù hợp làm đặc trưng dự đoán.
-- So sánh các nhóm đặc trưng để xác định nhóm nào thực sự cải thiện hiệu quả trên validation.
+So sánh hiệu quả ban đầu của các mô hình bằng Cross-Validation.
 
-Không phải tất cả các hướng trên đều bắt buộc. Chỉ sử dụng các đặc trưng có sẵn, có ý nghĩa và có thể được cung cấp khi dự đoán một tin tuyển dụng mới.
+Lựa chọn các mô hình có kết quả triển vọng để tiếp tục tối ưu.
 
-**Kết quả đầu ra:** Danh sách đặc trưng được lựa chọn, cách biến đổi tương ứng và bằng chứng thực nghiệm về tác dụng của chúng.
+Thử nghiệm Log Transformation nhằm cải thiện khả năng dự đoán.
 
-### Giai đoạn 6 — Huấn luyện và thử nghiệm mô hình
+Sử dụng Hyperparameter Tuning để tìm bộ siêu tham số phù hợp.
 
-**Mục tiêu:** So sánh các thuật toán hồi quy và tìm mô hình phù hợp với dữ liệu.
+So sánh kết quả trước và sau tối ưu để lựa chọn mô hình tốt nhất.
 
-Thực hiện trong `05_model_experiments.ipynb`.
+5.6. Model Evaluation (Đánh giá mô hình)
 
-Các thuật toán dự kiến khảo sát:
+Trạng thái: Dự kiến thực hiện
 
-- Dummy Regressor — baseline tham chiếu.
-- Linear Regression.
-- Ridge hoặc Lasso Regression.
-- Decision Tree Regressor.
-- Random Forest Regressor.
-- Gradient Boosting Regressor.
-- Các mô hình boosting khác nếu phù hợp với dữ liệu và môi trường.
+Đánh giá mô hình được lựa chọn trên tập Test độc lập bằng các chỉ số:
 
-Danh sách trên là các ứng viên ban đầu, không phải yêu cầu phải sử dụng tất cả. Việc lựa chọn cuối cùng dựa trên kết quả thực nghiệm, độ phức tạp, khả năng diễn giải, thời gian huấn luyện và yêu cầu của dự án.
+MAE (Mean Absolute Error): Sai số tuyệt đối trung bình.
 
-Các công việc:
+RMSE (Root Mean Squared Error): Căn bậc hai của sai số bình phương trung bình.
 
-1. Xác định cách chia dữ liệu và chỉ số đánh giá trước khi thử nghiệm.
-2. Xây dựng baseline để có mốc so sánh.
-3. Huấn luyện các mô hình trên cùng tập dữ liệu huấn luyện và quy trình đánh giá nhất quán.
-4. Dùng validation hoặc cross-validation để so sánh và điều chỉnh tham số khi cần.
-5. Ghi lại tham số, đặc trưng, thời gian chạy và kết quả của từng thí nghiệm.
-6. Chọn mô hình dựa trên nhiều tiêu chí thay vì chỉ nhìn vào một chỉ số.
-7. Chỉ sử dụng tập test cuối cùng để đánh giá khách quan sau khi quá trình lựa chọn mô hình đã hoàn tất.
+R² (Coefficient of Determination): Hệ số xác định.
 
-**Kết quả đầu ra:** Bảng so sánh mô hình và ứng viên được lựa chọn. Kết quả thực nghiệm sẽ được bổ sung sau khi chạy, không giả định trước độ chính xác hay hiệu suất.
+Bên cạnh đó, sử dụng các biểu đồ Actual vs Predicted, Residual Plot và Feature Importance để phân tích kết quả dự đoán và vai trò của các đặc trưng.
 
-### Giai đoạn 7 — Đánh giá và phân tích lỗi
-
-**Mục tiêu:** Đánh giá mức sai số dự đoán và hiểu những trường hợp mô hình hoạt động chưa tốt.
-
-Thực hiện trong `06_evaluation.ipynb` và triển khai các hàm cần thiết trong `src/evaluate.py`.
-
-Các chỉ số có thể sử dụng:
-
-- **MAE (Mean Absolute Error):** Sai số tuyệt đối trung bình, dễ diễn giải theo đơn vị của biến lương.
-- **RMSE (Root Mean Squared Error):** Phạt nặng hơn các sai số lớn.
-- **\(R^2\) (Coefficient of Determination):** Đo mức độ mô hình giải thích biến thiên của mục tiêu so với baseline trung bình trong điều kiện đánh giá tương ứng.
-- **Median Absolute Error:** Có thể bổ sung khi muốn xem xét chỉ số ít nhạy cảm hơn với một số sai số cực lớn.
-
-Các công việc:
-
-1. Tính các chỉ số trên tập đánh giá được xác định trước.
-2. So sánh với baseline.
-3. Phân tích phân phối phần dư và sai số dự đoán.
-4. Kiểm tra các trường hợp dự đoán âm hoặc giá trị không hợp lý nếu mô hình tạo ra chúng.
-5. Phân tích sai số theo nhóm chức danh, địa điểm hoặc các nhóm dữ liệu khác khi số lượng mẫu đủ lớn.
-6. Kiểm tra ảnh hưởng của giá trị ngoại lệ và phân phối lệch.
-7. Xem xét feature importance hoặc các phương pháp giải thích phù hợp nếu mô hình hỗ trợ.
-
-MAE và RMSE có cùng đơn vị với biến mục tiêu. Vì vậy, chỉ diễn giải chúng sau khi đã xác nhận đơn vị tiền tệ và chu kỳ trả lương của dữ liệu. \(R^2\) có thể âm nếu mô hình hoạt động kém hơn baseline tương ứng.
-
-**Kết quả đầu ra:** Báo cáo đánh giá, bảng so sánh, phân tích lỗi và lý do lựa chọn mô hình.
+Kết quả mong muốn: Xác định mô hình có khả năng dự đoán giá ô tô cũ hiệu quả, tổng quát hóa tốt trên dữ liệu chưa từng thấy và phù hợp với mục tiêu của dự án.
 
 ### Giai đoạn 8 — Xây dựng Python Pipeline
 
