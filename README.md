@@ -21,6 +21,7 @@ Biến mục tiêu (target): selling_price (đơn vị INR – rupee Ấn Độ)
 
 2. Bộ dữ liệu
 - Nguồn tham khảo: Vehicle Dataset from CarDekho – Kaggle
+https://www.kaggle.com/datasets/nehalbirla/vehicle-dataset-from-cardekho
 - Tệp dữ liệu: car_dataset.csv
 - Kích thước ban đầu: 4.340 dòng × 8 cột
 - Dữ liệu thiếu: Không phát hiện giá trị null trong 8 cột.
