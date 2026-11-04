@@ -1,26 +1,12 @@
-USE CarPriceDB;
-GO
-
-IF OBJECT_ID('dbo.cars_raw', 'U') IS NULL
-BEGIN
-    CREATE TABLE dbo.cars_raw (
-        car_id INT IDENTITY(1,1) PRIMARY KEY,
-
-        name NVARCHAR(255) NOT NULL,
-        year INT NOT NULL,
-        selling_price BIGINT NOT NULL,
-        km_driven BIGINT NOT NULL,
-        fuel NVARCHAR(50) NOT NULL,
-        seller_type NVARCHAR(100) NOT NULL,
-        transmission NVARCHAR(50) NOT NULL,
-        owner NVARCHAR(100) NOT NULL,
-
-        imported_at DATETIME2 NOT NULL
-            DEFAULT SYSUTCDATETIME()
-    );
-END;
-GO
-
-SELECT COLUMN_NAME, DATA_TYPE
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'cars_raw';
+CREATE TABLE IF NOT EXISTS public.cars_raw (
+    car_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    year INTEGER NOT NULL,
+    selling_price BIGINT NOT NULL,
+    km_driven BIGINT NOT NULL,
+    fuel VARCHAR(50) NOT NULL,
+    seller_type VARCHAR(100) NOT NULL,
+    transmission VARCHAR(50) NOT NULL,
+    owner VARCHAR(100) NOT NULL,
+    imported_at TIMESTAMPTZ DEFAULT NOW()
+);
