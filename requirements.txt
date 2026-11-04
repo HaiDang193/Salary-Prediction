@@ -1,31 +1,29 @@
 
-# Data processing
-numpy
-pandas
-scipy
-
-# Visualization
-matplotlib
-seaborn
-
-# Machine Learning
-scikit-learn
-joblib
+# Environment & Configuration
+python-dotenv
 
 # Kaggle API
 kaggle
 
-# SQL Server
-SQLAlchemy
-pyodbc
-python-dotenv
+# Database - Supabase PostgreSQL
+sqlalchemy
+psycopg[binary]
 
-# Notebook
+# Data Processing
+numpy
+pandas
+
+# Data Visualization
+matplotlib
+seaborn
+
+# Jupyter Notebook
 jupyter
 ipykernel
 
-# Application
-streamlit
+# Machine Learning
+scikit-learn
+xgboost
 
-# Testing
-pytest
+# Model Saving
+joblib
