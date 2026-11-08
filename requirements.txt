@@ -1,11 +1,11 @@
 
-# Environment & Configuration
+# Environment
 python-dotenv
 
-# Kaggle API
+# Kaggle
 kaggle
 
-# Database - Supabase PostgreSQL
+# Supabase PostgreSQL
 sqlalchemy
 psycopg[binary]
 
@@ -13,17 +13,18 @@ psycopg[binary]
 numpy
 pandas
 
-# Data Visualization
+# Visualization
 matplotlib
 seaborn
 
-# Jupyter Notebook
+# Notebook
 jupyter
 ipykernel
 
 # Machine Learning
 scikit-learn
 xgboost
-
-# Model Saving
 joblib
+
+# Web Application
+streamlit

@@ -1,199 +1,630 @@
-# Dự đoán giá ô tô cũ với Machine Learning
 
-## 1. Giới thiệu dự án
+# Car Price Prediction — Dự đoán giá ô tô cũ
 
-Thị trường ô tô đã qua sử dụng có sự đa dạng về hãng xe, năm sản xuất, số km đã đi, loại nhiên liệu và tình trạng sở hữu. Những đặc điểm này có thể liên quan đến giá bán, khiến việc ước lượng giá một chiếc xe cũ trở thành một bài toán đáng quan tâm.
+Dự án Machine Learning dự đoán **giá bán ô tô đã qua sử dụng** dựa trên các thông tin về xe. Dự án sử dụng dữ liệu **CarDekho**, thử nghiệm các mô hình hồi quy và triển khai mô hình **XGBoost** đã huấn luyện trên giao diện **Streamlit**.
 
-Dự án Dự đoán giá ô tô cũ (Used Car Price Prediction) sử dụng bộ dữ liệu CarDekho để khám phá các yếu tố liên quan đến giá bán và xây dựng mô hình Machine Learning nhằm ước lượng giá xe dựa trên những thông tin có sẵn.
+> **Đơn vị dự đoán:** INR (rupee Ấn Độ). Đây là giá ước lượng bằng mô hình, không phải báo giá thị trường và không phải VND.
 
-Dự án tập trung vào ba thuật toán hồi quy:
-- Linear Regression: Mô hình hồi quy tuyến tính, được sử dụng làm mốc so sánh.
-- Random Forest Regressor: Mô hình kết hợp nhiều cây quyết định theo phương pháp Bagging.
-- XGBoost Regressor: Mô hình sử dụng Gradient Boosting để cải thiện khả năng dự đoán.
-Thông qua quá trình khám phá dữ liệu, tiền xử lý, huấn luyện, tối ưu và đánh giá mô hình, dự án hướng đến việc so sánh hiệu quả của các thuật toán và lựa chọn phương pháp phù hợp cho bài toán dự đoán giá ô tô cũ.
+## 1. Mục tiêu dự án
 
-1. Mục tiêu dự án
-- Khám phá phân phối giá bán và mối quan hệ giữa các đặc trưng với giá xe.
-- Chuẩn bị dữ liệu và xây dựng đặc trưng phù hợp cho bài toán hồi quy (Regression).
-- Huấn luyện, so sánh và tối ưu Linear Regression, Random Forest và XGBoost.
-- Đánh giá bằng MAE, RMSE và R² trên dữ liệu chưa được sử dụng để huấn luyện.
-Biến mục tiêu (target): selling_price (đơn vị INR – rupee Ấn Độ).
+- Khám phá dữ liệu và xác định các yếu tố liên quan đến giá bán xe cũ.
+- Làm sạch dữ liệu, xây dựng đặc trưng và so sánh các mô hình hồi quy.
+- Tối ưu XGBoost bằng `RandomizedSearchCV` và đánh giá trên tập test.
+- Lưu model để dự đoán mà không cần huấn luyện lại mỗi lần sử dụng.
+- Xây dựng ứng dụng Streamlit cho phép nhập thông tin xe và nhận kết quả dự đoán.
 
-2. Bộ dữ liệu
-- Nguồn tham khảo: Vehicle Dataset from CarDekho – Kaggle
-https://www.kaggle.com/datasets/nehalbirla/vehicle-dataset-from-cardekho
-- Tệp dữ liệu: car_dataset.csv
-- Kích thước ban đầu: 4.340 dòng × 8 cột
-- Dữ liệu thiếu: Không phát hiện giá trị null trong 8 cột.
-- Dòng trùng hoàn toàn: 763; sau khi loại bỏ còn 3.577 dòng.
+## 2. Bộ dữ liệu
 
-Cột	Mô tả
-name : Tên xe, bao gồm hãng, mẫu xe và phiên bản
-year : Năm sản xuất
-selling_price : Giá bán xe (INR), là biến mục tiêu
-km_driven : Tổng số km xe đã đi
-fuel : Loại nhiên liệu: Petrol, Diesel, CNG, LPG, Electric
-seller_type : Loại người bán : Individual, Dealer, Trustmark Dealer
-transmission : Hộp số: Manual, Automatic
-owner : Thông tin sở hữu: First Owner, Second Owner, Third Owner, Fourth & Above Owner, Test Drive Car
+**Nguồn:** [Vehicle Dataset from CarDekho — Kaggle](https://www.kaggle.com/datasets/nehalbirla/vehicle-dataset-from-cardekho)
+
+- Tệp gốc trên Kaggle: `CAR DETAILS FROM CAR DEKHO.csv`
+- Tệp trong dự án: `data/raw/car_dataset.csv`
+- Kích thước ban đầu: **4.340 dòng, 8 cột**
+- Dữ liệu thiếu: Không phát hiện giá trị null.
+- Bản ghi trùng hoàn toàn: **763**
+- Sau khi loại trùng: **3.577 dòng**
+
+### Các thuộc tính
+
+| Cột | Mô tả |
+|---|---|
+| `name` | Hãng xe, mẫu xe và phiên bản |
+| `year` | Năm sản xuất |
+| `selling_price` | Giá bán thực tế (INR) — biến mục tiêu |
+| `km_driven` | Số km xe đã đi |
+| `fuel` | Loại nhiên liệu |
+| `seller_type` | Loại người bán |
+| `transmission` | Loại hộp số |
+| `owner` | Thông tin số đời chủ sở hữu |
 
 ## 3. Công nghệ sử dụng
 
-| Công nghệ | Mục đích |
+| Công nghệ | Vai trò |
 |---|---|
 | Python | Ngôn ngữ lập trình chính |
-| python-dotenv | Đọc cấu hình cục bộ từ file `.env` |
-| Pandas, NumPy | Xử lý và phân tích dữ liệu |
-| Matplotlib, Seaborn | Trực quan hóa dữ liệu |
-| Scikit-learn | Tiền xử lý, xây dựng pipeline, huấn luyện và đánh giá mô hình |
-| Microsoft SQL Server | Lưu trữ và truy vấn dữ liệu |
-| SQLAlchemy, pyodbc | Kết nối Python với SQL Server |
-| Jupyter Notebook | Khám phá dữ liệu và thử nghiệm mô hình |
-| Joblib | Lưu và tải lại pipeline/mô hình |
-| Git, GitHub | Quản lý phiên bản và mã nguồn |
-| VS Code | Môi trường phát triển |
+| Pandas, NumPy | Xử lý và biến đổi dữ liệu |
+| Matplotlib, Seaborn | Trực quan hóa và EDA |
+| Scikit-learn | Chia dữ liệu, Cross-Validation, tuning và đánh giá |
+| XGBoost | Mô hình dự đoán giá |
+| Joblib | Lưu và tải model |
+| Streamlit | Xây dựng giao diện dự đoán |
+| Supabase PostgreSQL | Lưu trữ dữ liệu dùng chung |
+| SQLAlchemy, Psycopg | Kết nối PostgreSQL |
+| Kaggle API | Tải bộ dữ liệu |
+| Jupyter Notebook | Phân tích và thử nghiệm mô hình |
+| Git, GitHub | Quản lý phiên bản |
 
-Danh sách công nghệ sẽ được cập nhật theo các thư viện thực tế được sử dụng trong dự án.
-
-## 4. Cấu trúc thư mục
+## 4. Cấu trúc dự án
 
 ```text
-salary-prediction/
+Salary Prediction/
+├── app/
+│   └── streamlit_app.py
+│
 ├── data/
-│   ├── raw/                              # Dữ liệu thô thu thập từ Adzuna API
-│   └── processed/                        # Dữ liệu đã làm sạch/biến đổi nếu cần
+│   ├── raw/
+│   │   └── car_dataset.csv
+│   └── processed/
+│       └── car_processed.csv
+│
+├── database/
+│   └── 01_create_tables.sql
+│
+├── models/
+│   └── car_price_xgboost.joblib
 │
 ├── notebooks/
-│   ├── 01_data_understanding.ipynb        # Tìm hiểu cấu trúc và chất lượng dữ liệu
-│   ├── 02_eda.ipynb                       # Phân tích khám phá dữ liệu
-│   ├── 03_preprocessing.ipynb             # Thử nghiệm tiền xử lý
-│   ├── 04_feature_engineering.ipynb       # Xây dựng và lựa chọn đặc trưng
-│   ├── 05_model_experiments.ipynb         # Thử nghiệm các mô hình hồi quy
-│   └── 06_evaluation.ipynb                # Đánh giá và phân tích lỗi mô hình
+│   ├── 01_data_understanding.ipynb
+│   ├── 02_eda.ipynb
+│   ├── 03_preprocessing.ipynb
+│   └── 04_model.ipynb
 │
-├
+├── scripts/
+│   ├── 01_download_data.py
+│   ├── 02_import_data.py
+│   ├── 03_validate_data.py
+│   ├── 04_train_model.py
+│   └── 05_test_prediction.py
 │
 ├── src/
 │   ├── __init__.py
-│   ├── config.py                          # Quản lý cấu hình và đường dẫn
-│   ├── db.py                              # Kết nối SQL Server
-│   ├── adzuna_client.py                   # Gọi API và xử lý phản hồi
-│   ├── data_loader.py                     # Đọc và nạp dữ liệu
-│   ├── data_validation.py                 # Kiểm tra chất lượng dữ liệu
-│   ├── eda.py                             # Các hàm phân tích dữ liệu có thể tái sử dụng
-│   ├── preprocessing.py                   # Tiền xử lý dữ liệu
-│   ├── feature_engineering.py              # Xây dựng đặc trưng
-│   ├── train.py                           # Huấn luyện và lưu mô hình
-│   ├── evaluate.py                        # Đánh giá mô hình
-│   └── predict.py                         # Thực hiện dự đoán
+│   ├── config.py
+│   ├── kaggle_client.py
+│   ├── database.py
+│   ├── data_loader.py
+│   ├── data_validation.py
+│   ├── eda.py
+│   ├── preprocessing.py
+│   ├── train.py
+│   ├── evaluate.py
+│   └── predict.py
 │
-├── sql/
-│   ├── 01_create_database.sql              # Tạo database
-│   ├── 02_create_tables.sql                # Tạo các bảng dữ liệu
-│   └── 03_quality_checks.sql               # Kiểm tra chất lượng dữ liệu bằng SQL
-│
-├── models/                                # Pipeline và mô hình đã huấn luyện
-├── reports/                               # Biểu đồ, bảng so sánh và báo cáo
-│
-├── main.py                                # Điều phối pipeline chính
-├── requirements.txt                       # Danh sách thư viện
-├── .env.example                           # Mẫu cấu hình môi trường
-├── .gitignore                             # Các tệp không đưa lên Git
-└── README.md                              # Tài liệu dự án
+├── .env.example
+├── .gitignore
+├── requirements.txt
+└── README.md
 ```
 
-Cấu trúc trên là cấu trúc mục tiêu. Các thư mục và file sẽ được hoàn thiện dần theo từng giai đoạn; không bắt buộc tất cả module phải có ngay từ đầu. Nếu cấu trúc dự án thực tế khác, hãy cập nhật README để phản ánh đúng mã nguồn hiện có.
+### Chức năng các thư mục
 
-## 5. Quy trình thực hiện dự án
+- `data/`: Chứa dữ liệu gốc và dữ liệu đã xử lý.
+- `database/`: Chứa SQL tạo bảng trên Supabase.
+- `notebooks/`: Chứa các bước phân tích, tiền xử lý và thử nghiệm.
+- `src/`: Chứa logic xử lý dữ liệu, huấn luyện và dự đoán.
+- `scripts/`: Chứa các lệnh thực thi độc lập.
+- `models/`: Chứa model đã huấn luyện.
+- `app/`: Chứa giao diện Streamlit.
 
-5. Quy trình thực hiện dự án
+## 5. Quy trình Machine Learning
 
-Dự án được triển khai theo quy trình Machine Learning, từ khám phá dữ liệu đến xây dựng, tối ưu và đánh giá các mô hình dự đoán giá ô tô cũ.
+### 5.1. Data Understanding
 
-5.1. Data Understanding (Tìm hiểu dữ liệu)
+Thực hiện trong `01_data_understanding.ipynb`.
 
-Trạng thái: Đã hoàn thành
+Các công việc:
 
-Tìm hiểu nguồn gốc, cấu trúc và ý nghĩa các thuộc tính trong bộ dữ liệu CarDekho.
+- Tìm hiểu nguồn dữ liệu và ý nghĩa các thuộc tính.
+- Kiểm tra kích thước và kiểu dữ liệu.
+- Phát hiện giá trị thiếu.
+- Kiểm tra bản ghi trùng lặp.
+- Thống kê mô tả các biến số và biến phân loại.
 
-Xác định biến mục tiêu selling_price và các đặc trưng đầu vào.
+**Kết quả:** Dataset có 4.340 bản ghi, 8 thuộc tính, không có giá trị null và có 763 bản ghi trùng hoàn toàn.
 
-Kiểm tra kiểu dữ liệu, giá trị thiếu và các bản ghi trùng lặp.
+### 5.2. Exploratory Data Analysis (EDA)
 
-Thực hiện thống kê mô tả để hiểu đặc điểm ban đầu của dữ liệu.
+Thực hiện trong `02_eda.ipynb`.
 
-Kết quả: Dataset gồm 4.340 bản ghi, 8 cột, không phát hiện giá trị thiếu và có 763 bản ghi trùng lặp hoàn toàn.
+Các nội dung phân tích:
 
-5.2. Exploratory Data Analysis – EDA (Phân tích khám phá dữ liệu)
+**Univariate Analysis**
 
-Trạng thái: Đã thực hiện phân tích ban đầu
+Phân tích phân phối của `selling_price`, `km_driven` và các đặc trưng khác.
 
-Univariate Analysis: Phân tích phân phối của biến mục tiêu selling_price và các đặc trưng.
+**Outlier Analysis**
 
-Outlier Analysis: Phát hiện các giá trị ngoại lai trong selling_price và km_driven bằng Boxplot.
+Sử dụng Boxplot để quan sát các giá trị ngoại lai trong giá bán và số km.
 
-Bivariate Analysis: Phân tích mối quan hệ giữa các đặc trưng và giá bán ô tô.
+**Bivariate Analysis**
 
-Correlation Analysis: Sử dụng Pearson Correlation và Heatmap để đánh giá tương quan tuyến tính giữa các biến số.
+Phân tích sự khác biệt về giá bán theo nhiên liệu, hộp số, người bán và chủ sở hữu.
 
-Kết quả ban đầu: Giá bán có phân phối lệch phải, xuất hiện các giá trị ngoại lai và có sự khác biệt về giá giữa các nhóm xe. Các kết quả EDA được sử dụng để định hướng quá trình tiền xử lý và xây dựng mô hình.
+**Correlation Analysis**
 
-5.3. Data Cleaning & Preprocessing (Làm sạch và tiền xử lý dữ liệu)
+Sử dụng Pearson Correlation và Heatmap để đánh giá mối tương quan tuyến tính giữa các biến số.
 
-Trạng thái: Đã xử lý trùng lặp; các bước còn lại dự kiến triển khai
+### 5.3. Data Preprocessing
 
-Loại bỏ 763 bản ghi trùng lặp hoàn toàn, còn lại 3.577 bản ghi.
+Thực hiện trong `03_preprocessing.ipynb`.
 
-Kiểm tra tính hợp lệ của dữ liệu và xem xét các giá trị ngoại lai.
+**Data Cleaning**
 
-Chia dữ liệu thành tập Train và Test trước các phép biến đổi cần học tham số.
+Loại bỏ các bản ghi trùng lặp hoàn toàn.
 
-Mã hóa các biến Categorical thành dạng số phù hợp với thuật toán.
+```python
+df = df.drop_duplicates().reset_index(drop=True)
+```
 
-Thực hiện Feature Engineering, tạo đặc trưng vehicle_age từ năm sản xuất.
+**Feature Engineering**
 
-Thử nghiệm Log Transformation cho các biến phù hợp khi cần thiết.
+Tạo đặc trưng tuổi xe:
 
-5.4. Model Training (Huấn luyện mô hình)
+```python
+REFERENCE_YEAR = 2026
 
-Trạng thái: Dự kiến thực hiện
+df["vehicle_age"] = REFERENCE_YEAR - df["year"]
+```
 
-Xây dựng và huấn luyện ba mô hình hồi quy:
+Trích xuất hãng xe từ tên xe để tạo đặc trưng `brand`.
 
-Linear Regression: Mô hình hồi quy tuyến tính làm mốc so sánh.
+**Target Transformation**
 
-Random Forest Regressor: Mô hình kết hợp nhiều cây quyết định theo phương pháp Bagging.
+Giảm độ lệch phải của biến mục tiêu bằng Log Transformation:
 
-XGBoost Regressor: Mô hình sử dụng Gradient Boosting để cải thiện hiệu quả dự đoán.
+```python
+df["log_selling_price"] = np.log1p(
+    df["selling_price"]
+)
+```
 
-Các mô hình được huấn luyện và đánh giá bằng cùng một quy trình nhằm đảm bảo tính nhất quán khi so sánh.
+**Categorical Encoding**
 
-5.5. Model Optimization (Tối ưu mô hình)
+- `owner`: Ordinal Encoding.
+- `brand`: One-Hot Encoding.
+- `fuel`: One-Hot Encoding.
+- `seller_type`: One-Hot Encoding.
+- `transmission`: One-Hot Encoding.
 
-Trạng thái: Dự kiến thực hiện
+Sử dụng `drop_first=True` khi tạo các biến dummy.
 
-So sánh hiệu quả ban đầu của các mô hình bằng Cross-Validation.
+**Kết quả preprocessing:**
 
-Lựa chọn các mô hình có kết quả triển vọng để tiếp tục tối ưu.
+- Số dòng: 3.577
+- Số features: 38
+- Số target: 1
+- File đầu ra: `data/processed/car_processed.csv`
 
-Thử nghiệm Log Transformation nhằm cải thiện khả năng dự đoán.
+### 5.4. Model Training
 
-Sử dụng Hyperparameter Tuning để tìm bộ siêu tham số phù hợp.
+Thực hiện trong `04_model.ipynb`.
 
-So sánh kết quả trước và sau tối ưu để lựa chọn mô hình tốt nhất.
+Dữ liệu được chia theo tỷ lệ:
 
-5.6. Model Evaluation (Đánh giá mô hình)
+- Training set: 80% (2.861 dòng)
+- Testing set: 20% (716 dòng)
+- Random state: 42
 
-Trạng thái: Dự kiến thực hiện
+Hai mô hình được thử nghiệm:
 
-Đánh giá mô hình được lựa chọn trên tập Test độc lập bằng các chỉ số:
+**Linear Regression**
 
-MAE (Mean Absolute Error): Sai số tuyệt đối trung bình.
+Sử dụng làm mô hình baseline để so sánh hiệu quả dự đoán.
 
-RMSE (Root Mean Squared Error): Căn bậc hai của sai số bình phương trung bình.
+**XGBoost Regressor**
 
-R² (Coefficient of Determination): Hệ số xác định.
+Sử dụng thuật toán Gradient Boosting để học các quan hệ phi tuyến giữa đặc trưng và giá xe.
 
-Bên cạnh đó, sử dụng các biểu đồ Actual vs Predicted, Residual Plot và Feature Importance để phân tích kết quả dự đoán và vai trò của các đặc trưng.
+Quá trình so sánh sử dụng **5-Fold Cross-Validation**.
 
-Kết quả mong muốn: Xác định mô hình có khả năng dự đoán giá ô tô cũ hiệu quả, tổng quát hóa tốt trên dữ liệu chưa từng thấy và phù hợp với mục tiêu của dự án.
+### 5.5. Hyperparameter Tuning
+
+Sử dụng `RandomizedSearchCV` để tối ưu XGBoost.
+
+Các tham số được tìm kiếm:
+
+| Hyperparameter | Giá trị thử nghiệm |
+|---|---|
+| `n_estimators` | 100, 200, 300, 400, 500 |
+| `learning_rate` | 0.01, 0.05, 0.1 |
+| `max_depth` | 3, 5, 7 |
+| `subsample` | 0.8, 1.0 |
+| `colsample_bytree` | 0.8, 1.0 |
+
+Thiết lập:
+
+- `n_iter = 180`
+- `cv = 5`
+- `random_state = 42`
+- `refit = "r2"`
+
+**Best Parameters tìm được:**
+
+```python
+{
+    "subsample": 0.8,
+    "n_estimators": 500,
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "colsample_bytree": 0.8
+}
+```
+
+### 5.6. Model Evaluation
+
+Kết quả được ghi nhận trong notebook `04_model.ipynb`.
+
+**So sánh Cross-Validation**
+
+| Model | CV R² | CV MAE | CV RMSE |
+|---|---:|---:|---:|
+| Linear Regression | 0.7760 | 0.3014 | 0.3845 |
+| XGBoost Baseline | 0.7609 | 0.3077 | 0.3971 |
+| XGBoost Tuned | **0.7881** | **0.2902** | **0.3738** |
+
+Các metric trong bảng trên được tính trên thang log-price.
+
+**Kết quả trên tập Test**
+
+| Metric | Giá trị |
+|---|---:|
+| R² (log-price) | 0.7982 |
+| MAE (log-price) | 0.2893 |
+| RMSE (log-price) | 0.3720 |
+| MAE (INR) | 140,910.52 |
+| RMSE (INR) | 334,868.79 |
+
+Để đánh giá trên thang giá gốc, kết quả dự đoán được chuyển đổi bằng:
+
+```python
+y_pred_real = np.expm1(y_pred)
+```
+
+**Mô hình được lựa chọn:** XGBoost Regressor sau Hyperparameter Tuning.
+
+Các kết quả trên phản ánh lần thử nghiệm đã lưu trong notebook, chưa phải đánh giá lại trên dữ liệu mới.
+
+## 6. Lưu trữ model
+
+Sau khi hoàn tất huấn luyện, model được lưu bằng Joblib:
+
+```python
+import joblib
+from pathlib import Path
+
+MODEL_DIR = Path("../models")
+MODEL_DIR.mkdir(parents=True, exist_ok=True)
+
+joblib.dump(
+    best_xgb,
+    MODEL_DIR / "car_price_xgboost.joblib"
+)
+```
+
+Model được lưu tại:
+
+```text
+models/car_price_xgboost.joblib
+```
+
+Ứng dụng Streamlit sử dụng lại model này mà không phải huấn luyện lại.
+
+Tên và thứ tự các features được lấy từ:
+
+```python
+model.feature_names_in_
+```
+
+Do đó, **không cần file `model_features.json`** nếu model có thuộc tính này.
+
+## 7. Cài đặt môi trường
+
+### 7.1. Clone repository
+
+```powershell
+git clone <repository-url>
+```
+
+Di chuyển vào thư mục dự án.
+
+### 7.2. Tạo môi trường ảo
+
+Nếu chưa có `.venv`:
+
+```powershell
+python -m venv .venv
+```
+
+Kích hoạt trên PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Nếu đã có `.venv`, chỉ cần kích hoạt lại, không cần tạo môi trường mới.
+
+### 7.3. Cài đặt thư viện
+
+```powershell
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+Kiểm tra thư viện:
+
+```powershell
+python -m pip check
+```
+
+## 8. Chạy ứng dụng Streamlit
+
+Đảm bảo file model đã tồn tại tại đường dẫn:
+
+```text
+models/car_price_xgboost.joblib
+```
+
+Từ thư mục gốc của dự án, chạy:
+
+```powershell
+python -m streamlit run app/streamlit_app.py
+```
+
+Streamlit sẽ khởi chạy ứng dụng trên trình duyệt.
+
+### Thông tin đầu vào
+
+Người dùng nhập:
+
+- Tên xe
+- Năm sản xuất
+- Số km đã đi
+- Loại nhiên liệu
+- Loại người bán
+- Hộp số
+- Thông tin chủ sở hữu
+
+Ví dụ:
+
+```text
+Name: Maruti Swift Dzire VDI
+Year: 2018
+KM Driven: 50000
+Fuel: Diesel
+Seller Type: Individual
+Transmission: Manual
+Owner: First Owner
+```
+
+Nhấn **Predict Price** để nhận kết quả.
+
+### Prediction Pipeline
+
+```text
+User Input
+    |
+    v
+Streamlit Form
+    |
+    v
+src/preprocessing.py
+    |
+    v
+Feature Engineering
+    |
+    v
+38 Model Features
+    |
+    v
+src/predict.py
+    |
+    v
+XGBoost Model
+    |
+    v
+Log Price Prediction
+    |
+    v
+np.expm1()
+    |
+    v
+Predicted Price (INR)
+```
+
+Các bước tiền xử lý khi dự đoán phải giống với quy trình đã sử dụng lúc huấn luyện model.
+
+Ứng dụng dự đoán không yêu cầu kết nối Supabase vì model được tải trực tiếp từ file `.joblib`.
+
+## 9. Chạy các Scripts
+
+Tất cả lệnh được thực hiện từ thư mục gốc dự án.
+
+### 9.1. Download Dataset
+
+```powershell
+python -m scripts.01_download_data
+```
+
+Tải CSV từ Kaggle vào:
+
+```text
+data/raw/car_dataset.csv
+```
+
+### 9.2. Import Data to Supabase
+
+```powershell
+python -m scripts.02_import_data
+```
+
+Nạp dữ liệu vào bảng `public.cars_raw`.
+
+Cần tạo bảng bằng file `database/01_create_tables.sql` trước khi import.
+
+### 9.3. Validate Dataset
+
+```powershell
+python -m scripts.03_validate_data
+```
+
+Kiểm tra cấu trúc dữ liệu, giá trị thiếu, trùng lặp và giá bán không hợp lệ.
+
+### 9.4. Train Model
+
+```powershell
+python -m scripts.04_train_model
+```
+
+Huấn luyện và tuning lại XGBoost.
+
+**Lưu ý:** Script này có thể ghi đè model hiện tại. Không cần chạy nếu chỉ muốn sử dụng model đã train.
+
+### 9.5. Test Prediction
+
+```powershell
+python -m scripts.05_test_prediction
+```
+
+Kiểm tra quá trình tải model, preprocessing và dự đoán.
+
+## 10. Cấu hình Supabase và Kaggle
+
+Tạo file `.env` dựa trên `.env.example`.
+
+```dotenv
+# Kaggle
+KAGGLE_DATASET=nehalbirla/vehicle-dataset-from-cardekho
+KAGGLE_API_TOKEN=your_kaggle_api_token
+
+# Supabase PostgreSQL
+DB_HOST=your-session-pooler-host
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=postgres.your_project_ref
+DB_PASSWORD=your_database_password
+```
+
+Thông tin kết nối được sử dụng bởi:
+
+- `src/config.py`
+- `src/kaggle_client.py`
+- `src/database.py`
+
+**Bảo mật:** Không commit `.env`, API token hoặc database password lên GitHub.
+
+Supabase được sử dụng để lưu trữ và truy xuất dữ liệu. Ứng dụng Streamlit hiện tại chưa sử dụng database để lưu lịch sử dự đoán.
+
+## 11. Troubleshooting
+
+### Lỗi: No module named streamlit
+
+Nguyên nhân: Streamlit chưa được cài trong môi trường đang chạy.
+
+```powershell
+python -m pip install streamlit
+```
+
+### Lỗi: No module named src
+
+Chạy Streamlit từ thư mục gốc dự án:
+
+```powershell
+python -m streamlit run app/streamlit_app.py
+```
+
+### Lỗi: Model not found
+
+Kiểm tra file:
+
+```text
+models/car_price_xgboost.joblib
+```
+
+### Lỗi: Expecting value: line 1 column 1
+
+Lỗi có thể xảy ra khi chương trình cố đọc một file JSON rỗng hoặc không hợp lệ.
+
+Nếu `src/predict.py` đã được cập nhật để lấy tên features từ `model.feature_names_in_`, không cần sử dụng `model_features.json`.
+
+### Lỗi: Feature names mismatch
+
+Kiểm tra dữ liệu đầu vào sau preprocessing.
+
+Số features, tên cột và thứ tự cột phải giống với lúc model được huấn luyện.
+
+### Cảnh báo phiên bản XGBoost
+
+Model lưu bằng Joblib có thể phát sinh cảnh báo tương thích phiên bản khi tải bằng môi trường khác.
+
+Nên sử dụng phiên bản thư viện tương thích với phiên bản lúc huấn luyện và chỉ tải model từ nguồn đáng tin cậy.
+
+## 12. Hạn chế của dự án
+
+### 12.1. Dataset
+
+Dữ liệu CarDekho phản ánh thị trường ô tô tại Ấn Độ. Kết quả không thể áp dụng trực tiếp để định giá ô tô tại Việt Nam.
+
+### 12.2. Feature Engineering
+
+Đặc trưng `vehicle_age` đang sử dụng năm tham chiếu cố định **2026**.
+
+Việc thay đổi năm tham chiếu có thể khiến dữ liệu đầu vào không tương thích với phân phối đặc trưng mà model đã học.
+
+### 12.3. Unknown Categories
+
+Nếu người dùng nhập hãng xe chưa xuất hiện trong dữ liệu train, model không có feature One-Hot Encoding riêng cho hãng đó.
+
+Điều này có thể làm giảm độ chính xác.
+
+### 12.4. Data Leakage
+
+Notebook hiện thực hiện One-Hot Encoding trên toàn bộ dữ liệu trước khi chia train/test.
+
+Trong các phiên bản tiếp theo, nên sử dụng Scikit-learn Pipeline để fit các phép tiền xử lý trên training set trước, sau đó áp dụng cho validation/test set.
+
+### 12.5. Model Limitations
+
+Model chưa sử dụng những yếu tố như:
+
+- Lịch sử tai nạn
+- Tình trạng động cơ
+- Lịch sử bảo dưỡng
+- Số lần sửa chữa
+- Vị trí địa lý
+- Biến động giá theo thời gian
+
+Vì vậy, kết quả chỉ nên được xem là giá tham khảo.
+
+## 13. Hướng phát triển
+
+- Đánh giá lại mô hình với pipeline tránh data leakage.
+- Thử nghiệm thêm các thuật toán như Random Forest và CatBoost.
+- Cải thiện khả năng xử lý hãng xe và danh mục chưa từng xuất hiện.
+- Bổ sung các yếu tố ảnh hưởng đến giá xe.
+- Thêm trực quan hóa kết quả dự đoán trên Streamlit.
+- Lưu lịch sử dự đoán trên Supabase.
+- Tích hợp API bằng FastAPI nếu phát triển ứng dụng lớn hơn.
+- Triển khai ứng dụng lên Streamlit Community Cloud.
+
+Khi triển khai, cần đảm bảo server có thể truy cập file model. Nếu `.gitignore` loại trừ `.joblib`, phải cấu hình một phương thức phân phối model riêng.
+
+## 14. Tài liệu tham khảo
+
+- [Vehicle Dataset from CarDekho](https://www.kaggle.com/datasets/nehalbirla/vehicle-dataset-from-cardekho)
+- [Scikit-learn Documentation](https://scikit-learn.org/stable/)
+- [XGBoost Documentation](https://xgboost.readthedocs.io/)
+- [Streamlit Documentation](https://docs.streamlit.io/)
+- [Supabase Documentation](https://supabase.com/docs)
+
+---
+
+**Trạng thái dự án:** Đã có notebook phân tích, tiền xử lý, model XGBoost đã huấn luyện và mã nguồn ứng dụng Streamlit. Cần tiếp tục kiểm thử toàn bộ quy trình trên máy đích và triển khai nếu muốn phát hành công khai.

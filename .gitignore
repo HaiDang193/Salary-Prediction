@@ -1,63 +1,36 @@
 
-# Python
-__pycache__/
-*.py[cod]
-*.so
-
-# Virtual environments
-.venv/
-venv/
-env/
-
-# Secrets and local configuration
+# Environment
 .env
 .env.*
 !.env.example
+.venv/
+venv/
 
-# Kaggle link
-https://www.kaggle.com/datasets/nehalbirla/vehicle-dataset-from-cardekho
-
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
 
 # Jupyter
 .ipynb_checkpoints/
 
-# Raw and processed data
+# Data
 data/raw/*
 !data/raw/.gitkeep
-
 data/processed/*
 !data/processed/.gitkeep
 
-# Trained models
-models/*
-!models/.gitkeep
-*.pkl
-*.pickle
-*.joblib
-*.h5
-*.keras
-*.pt
-*.pth
-*.onnx
+# Models
+models/*.joblib
+models/*.pkl
 
-# Experiment outputs and reports
-reports/*
-!reports/.gitkeep
-runs/
-wandb/
-mlruns/
-
-# Logs and caches
-*.log
-logs/
-.cache/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# IDE and OS
+# IDE
 .vscode/
 .idea/
+
+# System
 .DS_Store
 Thumbs.db
-desktop.ini
+
+# Logs
+*.log
